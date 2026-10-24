@@ -93,7 +93,9 @@ charter with these behavior-level facts:
    and `main-dev`. Set `main-dev` as the default branch so PRs target it by default.
 6. Enable secret scanning, push protection, Dependabot alerts and security updates,
    and private vulnerability reporting.
-7. Apply the rulesets in 4.2.
+7. Apply the rulesets in 4.2 in two phases: now, everything except required status
+   checks (no check exists before CI, so requiring one would block M0.1 and M0.2
+   forever); in M0.3, once `ci.yml` has reported, add the required checks.
 
 Commits use the owner's GitHub no-reply identity. Hostnames never appear in author
 fields (the legacy history has 67 commits with a hostname in the author email, one
@@ -115,10 +117,12 @@ PRs into `main-dev` are squash-merged; release PRs into `main` use a merge commi
 - `.gitignore` covers charter 2.4 and 19.5 plus `bin/`, `obj/`, `.vs/`, `TestResults/`.
 - `.gitattributes`: `* text=auto eol=crlf` for source, `binary` for `*.png`, `*.ico`,
   `*.ttf`, `*.otf`.
-- CI job step `source-only` fails if any tracked file matches `*.dll`, `*.exe`,
-  `*.pdb`, `*.nupkg`, `*.snupkg`, `*.zip`, `*.msi`, `*.7z`, or lives under a `bin/`,
-  `obj/`, `artifacts/` or `publish/` folder. Allowed binary sources are images and
-  fonts under `assets/` and images under `docs/`.
+- A source-only test in `EmcCompanion.Architecture.Tests` (run by CI's `build` job)
+  fails if any tracked file matches `*.dll`, `*.exe`, `*.pdb`, `*.nupkg`, `*.snupkg`,
+  `*.zip`, `*.msi`, `*.7z`, or lives under a `bin/`, `obj/`, `artifacts/` or
+  `publish/` folder. Images and fonts are allowed only under `assets/` (images and
+  fonts) and `docs/` (images). Outside a git checkout (for example a source zip
+  download) the test reports itself skipped instead of failing.
 - Users build from source. CI builds release binaries only on `v*` tags (M10.4).
 
 ## 5. M0.1 Repository and legal
@@ -160,7 +164,7 @@ What to test (owner):
 2. `docs/PROJECT.md` has no workstation hostname and no `C:\Users\<name>` path
    (search the file).
 3. Install the pre-commit hook (`pre-commit install`), then try to commit a file
-   containing a fake token produced by the generator command in TESTING.md: the
+   containing a fake token produced by the generator command in CONTRIBUTING.md: the
    gitleaks hook blocks the commit. Nothing secret-shaped is ever pushed (charter 3.3
    lesson).
 4. Repo Settings > Code security: secret scanning and push protection show Enabled.
@@ -182,7 +186,7 @@ Branch `feature/m0-2-solution-skeleton`.
 | `src/EmcCompanion.Bridge.Contracts` | netstandard2.0 | library | `ContractInfo.Version = 1` |
 | `src/EmcCompanion.Plugins.Abstractions` | net10.0 | library | `PluginApi.Version = "1.0"` |
 | `src/EmcCompanion.Updater` | net10.0-windows | library | `AddUpdater()` extension |
-| `tests/EmcCompanion.Architecture.Tests` | net10.0-windows | xUnit v3 | Rules in 6.3 |
+| `tests/EmcCompanion.Architecture.Tests` | net10.0-windows | xUnit v3 | M0.2: Bridge configuration safety tests (self-update off, EMC binding redirects). M0.3: the rules in 7.2 and the source-only test |
 | `tests/EmcCompanion.Bridge.Contracts.Tests` | net10.0 | xUnit v3 | Contract version is 1 |
 | `tests/EmcCompanion.Presentation.Tests` | net10.0-windows | xUnit v3 | Host builds with `ValidateOnBuild` and `ValidateScopes`; `ShellViewModel` resolves with its title (no window is created) |
 
@@ -227,9 +231,10 @@ constants (charter 7.2).
 
 ### 6.5 Local deploy script
 
-`build/Deploy-Local.ps1` (requires an elevated PowerShell):
+`build/Deploy-Local.ps1` (the default target needs an elevated PowerShell):
 
-1. Refuses to run unless elevated.
+1. Stops with a clear message when the target folder is not writable by the current
+   process (the Program Files default requires elevation; a temp target does not).
 2. Publishes the app (`win-x64`, self-contained) and the Bridge (x64) to
    `publish/local/` (ignored).
 3. If `EmcCompanion.exe` is running from the target folder, asks before closing it.
@@ -257,11 +262,11 @@ Triggers: pull requests into `main-dev` and `main`, pushes to `main-dev` and `ma
 Runner `windows-latest`. Concurrency group per ref, cancel in progress.
 
 Job `build` steps: checkout (full history for gitleaks), setup-dotnet from
-`global.json`, `source-only` guard (4.3), `dotnet restore --locked-mode`,
-`dotnet format --verify-no-changes`, `dotnet build -c Release`,
-`dotnet test -c Release --no-build`, run the Bridge exe and assert it reports
-`64-bit`, gitleaks CLI (pinned release, checksum-verified, `detect` over the
-history; run directly so no action license is needed).
+`global.json`, `dotnet restore --locked-mode`, `dotnet format --verify-no-changes`,
+`dotnet build -c Release`, `dotnet test -c Release --no-build` (includes the
+source-only test, 4.3), run the Bridge exe and assert it reports `64-bit`, gitleaks
+CLI (pinned release, checksum-verified, `gitleaks git` over the history; run directly
+so no action license is needed).
 
 Job `main-source` (only on PRs into `main`): fails unless the head branch is
 `main-dev` or `release/*`.
@@ -295,7 +300,7 @@ What to test (owner):
 1. The M0.3 PR shows a green `build` check.
 2. On a scratch branch, change one namespace to file-scoped and open a draft PR:
    `build` fails on the architecture test and the analyzer.
-3. On a scratch branch, add an empty `test.dll`: `build` fails at `source-only`.
+3. On a scratch branch, add an empty `test.dll`: `build` fails at the source-only test.
 4. Open a PR from a feature branch into `main`: `main-source` fails.
 
 ## 8. M0.4 Docs baseline
