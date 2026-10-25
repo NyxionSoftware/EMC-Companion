@@ -78,4 +78,4 @@ git commit -m "hook test"   # expected: blocked by gitleaks
 git reset hook-test.txt; Remove-Item hook-test.txt
 ```
 
-Run this test on a scratch branch: start with `git switch -c hook-test`, and when you are done, switch back with `git switch -` and delete the branch with `git branch -D hook-test`. If the commit succeeds, the hook is not working. Before you do anything else, undo it with `git reset --soft HEAD~1`, then `git reset hook-test.txt`, then `Remove-Item hook-test.txt`. Then fix your hook setup. Never push that branch.
+Run this on a scratch branch: `git switch -c hook-test` first. If the commit is blocked, the hook works; switch back with `git switch -` and delete the branch with `git branch -D hook-test`. If the commit succeeds, the hook is not working: run `git switch -` and `git branch -D hook-test`, which discards the fake commit, then fix your hook setup. Never push that branch.

@@ -4,8 +4,8 @@
 ![.NET](https://img.shields.io/badge/.NET-10-512BD4)
 ![Platform](https://img.shields.io/badge/platform-Windows%2010%2B%20x64-0078D6)
 ![Build](https://img.shields.io/badge/build-placeholder-lightgrey)
-![License](https://img.shields.io/badge/license-TBD-lightgrey)
-![Secrets](https://img.shields.io/badge/secret%20scan-GitGuardian-success)
+![License](https://img.shields.io/badge/license-Apache--2.0-blue)
+![Secret scan](https://img.shields.io/badge/secret%20scan-gitleaks-success)
 
 > Master project charter. Owner: NyxionSoftware. Copyright (c) 2026 NyxionSoftware (https://nyxionsoftware.com).
 
@@ -53,7 +53,7 @@ EMC Companion is a Windows desktop application that lets Oracle Simphony adminis
 | Author / owner | NyxionSoftware (personally owned; not affiliated with any employer) |
 | Copyright | Copyright (c) 2026 NyxionSoftware (https://nyxionsoftware.com) |
 | App platform | .NET 10, WPF, Windows 10 or later, 64-bit |
-| Bridge platform | .NET Framework 4.8 (minimum 4.6.2 compatible), x64 by default (`BridgePlatform=x86` build switch kept until M1.3 verifies x64 with a live sign-in) |
+| Bridge platform | .NET Framework 4.8 (minimum 4.6.2 compatible), x64 by default (`BridgePlatform=x86` build switch kept until M1.4 verifies x64 with a live sign-in; M1.3 first confirms the EMC libraries load in the x64 Bridge) |
 | Target EMC | Simphony EMC client 19.10.2.0.27 (`EMC.exe` is an AnyCPU .NET Framework 4.6.2 executable with a WinForms UI; it runs 64-bit on x64 Windows) |
 | Repository | public `NyxionSoftware/EMC-Companion`; legacy private repo `EMC-Companion-Legacy` |
 | Lineage | Continues the version line of the owner's "EMC Export Utility" (v0.7.1) and the private .NET 8 "EMC Companion" iteration, which now lives in the private `EMC-Companion-Legacy` repo |
@@ -143,7 +143,7 @@ The app name "EMC Companion" describes compatibility with EMC. The About box and
 | `.gitignore` | Ignores `bin/`, `obj/`, `publish/`, `artifacts/`, `lib/emc/`, `*.user`, `appsettings.Local.json`, `*.pfx`, `*.snk` (unless public), `logs/`, `TestResults/`, `screenshots/raw/` |
 | User secrets | Developer-only values (test server URL for integration tests) live in `dotnet user-secrets` or environment variables, never in tracked files |
 | Settings beside exe | Runtime settings live in `settings.json` beside the exe or in `%APPDATA%\NyxionSoftware\EMC Companion\`; neither is tracked |
-| Pre-commit scan | `ggshield` (GitGuardian) pre-commit hook recommended, with `gitleaks` as an offline alternative; config in `.pre-commit-config.yaml` |
+| Pre-commit scan | `gitleaks` is the pinned pre-commit hook (`.pre-commit-config.yaml`); `ggshield` (GitGuardian) is optional |
 | CI scan | GitHub secret scanning plus push protection enabled on the repo; GitGuardian app on PRs; `gitleaks` job in CI as a backstop |
 | Placeholders | Test placeholders must not look like real secrets. Use `example.invalid` hosts and obviously fake values like `not-a-password`. Lesson learned: a realistic placeholder triggered GitGuardian in the old repo and forced a squash into a fresh PR |
 | Signing keys | Code-signing certificates live only in GitHub Actions secrets or a hardware token; never in the repo |
@@ -176,7 +176,7 @@ Third-party open-source components and their licenses are listed in
 THIRD-PARTY-NOTICES.md.
 ```
 
-### 2.7 License recommendation (owner to decide)
+### 2.7 License (decided: Apache-2.0)
 
 The previous private repo was proprietary. A public repo needs an explicit choice; without a license, the code is visible but "all rights reserved".
 
@@ -188,7 +188,7 @@ The previous private repo was proprietary. A public repo needs an explicit choic
 | **MPL-2.0** | File-level copyleft; plugins can be any license | Good middle ground for a plugin ecosystem |
 | **Source-available / proprietary** (all rights reserved, or PolyForm Noncommercial) | Code visible, reuse restricted | Keeps control; discourages contributions |
 
-Recommendation: **Apache-2.0 for the app**, with `EmcCompanion.Plugins.Abstractions` and `EmcCompanion.Bridge.Contracts` under the same license so plugin authors may license their plugins however they want. If the owner prefers control, choose PolyForm Noncommercial 1.0.0 and state that clearly in the README. Decision tracked in section 17.
+The owner chose **Apache-2.0** for the whole repository, including `EmcCompanion.Plugins.Abstractions` and `EmcCompanion.Bridge.Contracts` (decision D1 in section 17), so plugin authors may license their plugins however they want.
 
 ---
 
@@ -784,6 +784,7 @@ using EmcCompanion.Application.MenuItems;
 using EmcCompanion.Fakes;
 
 using Shouldly;
+
 using Xunit;
 
 namespace EmcCompanion.Application.Tests.MenuItems
@@ -1726,7 +1727,7 @@ Order note: M10 and M11 can move earlier (after M3) if the owner wants installab
 - LICENSE (per decision), NOTICE, THIRD-PARTY-NOTICES.md, README skeleton, CONTRIBUTING (clean-room rule), SECURITY.
 - `.gitignore`, `.gitattributes`, `.editorconfig`, `.pre-commit-config.yaml` (ggshield/gitleaks).
 - Enable secret scanning, push protection, Dependabot, private vulnerability reporting.
-- AC: repo public; push of a fake secret pattern is blocked; no binaries tracked.
+- AC: repo public; a commit containing a generated fake token is blocked by the gitleaks pre-commit hook; nothing secret-shaped is pushed; no binaries tracked.
 
 **M0.2 Solution skeleton**
 - Create all `src/` and `tests/` projects with targets in 6.2; `Directory.Build.props` with `<Version>0.1.0</Version>`; `Directory.Packages.props`; `global.json`.
@@ -2180,7 +2181,7 @@ The table lists every batch from this section as an initial card, so the board c
 | D18 | Trello board visibility | Private board, public read-only board, or workspace-visible | Private (repo is public, but the board may hold owner notes and test details) | Private board |
 | D19 | Claude/agents moving Trello cards | Owner moves all cards, agents move cards automatically within rules (never out of Testing), or agents only comment | Agents may move cards to In Progress and In Review and comment; only the owner moves cards out of Testing | Agents move cards to In Progress and In Review and comment; only the owner moves cards out of Testing |
 | D20 | Trello Power-Up use | GitHub Power-Up only, GitHub Power-Up plus Butler automation and Custom Fields, or no Power-Ups (manual links) | GitHub Power-Up plus Butler; Custom Fields if the plan allows | GitHub Power-Up plus Butler; Custom Fields if the plan allows |
-| D21 | Bridge bitness | x64 vs x86 | x64, matching how `EMC.exe` runs; keep an x86 build switch until a live sign-in verifies x64 | x64 by default, matching how EMC.exe runs; `BridgePlatform=x86` build switch kept until M1.3 verifies x64 with a live sign-in |
+| D21 | Bridge bitness | x64 vs x86 | x64, matching how `EMC.exe` runs; keep an x86 build switch until a live sign-in verifies x64 | x64 by default, matching how EMC.exe runs; `BridgePlatform=x86` build switch kept until M1.4 verifies x64 with a live sign-in (M1.3 first confirms the EMC libraries load in the x64 Bridge) |
 | D22 | Repo visibility | Public from creation vs private first and public later | Public from creation (the new repo starts from a clean root commit) | New repo is public from creation |
 | D23 | Branch content | Source only vs committing build output or binaries | Source only; CI builds release binaries and attaches them to GitHub Releases | Source only; no build output or binaries in any branch. Release binaries are built by CI and attached to GitHub Releases |
 | D24 | Charter location | Charter kept outside the repo vs inside the repo | Inside the repo as `docs/PROJECT.md`, scrubbed of environment details | The charter lives in the repo as `docs/PROJECT.md`, scrubbed of environment details, and is updated by PR like any doc |

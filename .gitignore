@@ -13,6 +13,9 @@ TestResults/
 
 # Agent scratch (never committed)
 .superpowers/
+# Per-machine agent permissions and IDE settings (can contain user-profile paths)
+.claude/settings.local.json
+.idea/
 
 # Project-specific (docs/PROJECT.md sections 2.4 and 19.5)
 # Never commit Oracle or third-party proprietary binaries

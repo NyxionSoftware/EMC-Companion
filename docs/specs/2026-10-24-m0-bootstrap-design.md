@@ -57,7 +57,7 @@ these outcomes into the charter's "Owner decision" column.
 | D18 | Trello visibility | Private board |
 | D19 | Agents and Trello | Agents move cards to In Progress and In Review and comment; only the owner moves cards out of Testing |
 | D20 | Trello Power-Ups | GitHub Power-Up plus Butler; Custom Fields if the plan allows |
-| D21 | Bridge bitness (new) | x64 by default, matching how EMC.exe runs; `BridgePlatform=x86` build switch kept until M1.3 verifies x64 with a live sign-in |
+| D21 | Bridge bitness (new) | x64 by default, matching how EMC.exe runs; `BridgePlatform=x86` build switch kept until M1.4 verifies x64 with a live sign-in (M1.3 first confirms the EMC libraries load in the x64 Bridge) |
 | D22 | Repo visibility (new) | New repo is public from creation |
 | D23 | Branch content (new) | Source only; no build output or binaries in any branch. Release binaries are built by CI and attached to GitHub Releases |
 | D24 | Charter location (new) | The charter lives in the repo as `docs/PROJECT.md`, scrubbed of environment details, and is updated by PR like any doc |
@@ -229,8 +229,8 @@ namespace when block-scoped is preferred; corrected from IDE0161 during M0.1),
 `IDE0011` (braces), `IDE0005` (unused usings), `IDE0040` (explicit accessibility),
 `IDE0044` (readonly fields), `IDE0065` with
 `csharp_using_directive_placement = outside_namespace` (Visual Studio default usings).
-Sets `dotnet_separate_import_directive_groups = true` so System, project and
-third-party usings form separate groups as in charter 7.3. Adds naming rules for
+Sets `dotnet_separate_import_directive_groups = true` so usings form one group per
+top-level namespace, System first, then alphabetical. Adds naming rules for
 `_camelCase` private fields, `I`-prefixed interfaces, `Async` suffix, and PascalCase
 constants (charter 7.2). Explicit accessibility applies to non-interface members only
 (charter 11.3 declares interface members without modifiers). The `Async` suffix rule is
@@ -361,7 +361,7 @@ screenshot harness, installer, updater, plugins, release workflow.
 
 | # | Risk | Mitigation |
 |---|---|---|
-| R1 | x64 Bridge fails with EMC libraries at runtime | `BridgePlatform=x86` switch; M1.3 live sign-in test decides; D21 revisited then |
+| R1 | x64 Bridge fails with EMC libraries at runtime | `BridgePlatform=x86` switch kept until M1.4 verifies x64 with a live sign-in (M1.3 first confirms the EMC libraries load in the x64 Bridge); D21 revisited then |
 | R2 | xUnit v3 / Microsoft Testing Platform friction with `dotnet test` on .NET 10 | Use the `Microsoft.Testing.Platform` runner mode configured in `global.json`; fall back to xUnit v2 + VSTest if CI is unstable |
 | R3 | Bridge's System.Text.Json conflicts with EMC's 8.0.0.5 | Bridge pins System.Text.Json 8.0.x in M1.1 and redirects to it; if that fails, the Bridge uses the redirect target EMC ships |
 | R4 | GitHub push protection does not catch the test pattern | The pre-commit gitleaks hook and the CI gitleaks step are independent backstops |

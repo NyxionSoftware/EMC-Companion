@@ -99,3 +99,9 @@ dotnet_naming_style.underscore_camel_case_style.required_prefix = _
 # Async suffix), so the Async-suffix rule is off under tests/. It stays in force everywhere else.
 [tests/**.cs]
 dotnet_naming_rule.async_methods_end_with_async.severity = none
+
+# Charter 7.2 test names use underscores (Method_State_Expected), so CA1707 is off under tests/.
+dotnet_diagnostic.CA1707.severity = none
+
+# xUnit test methods are instance methods, so CA1822 (make static) is off under tests/.
+dotnet_diagnostic.CA1822.severity = none
