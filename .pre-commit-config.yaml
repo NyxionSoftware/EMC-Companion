@@ -1,0 +1,14 @@
+# Pre-commit hooks (docs/PROJECT.md section 2.4). Enable once per clone: pre-commit install
+repos:
+  # Offline secret scan.
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: v8.30.1
+    hooks:
+      - id: gitleaks
+
+  # Optional second hook: ggshield (GitGuardian). Uncomment to enable, and pin
+  # rev to a current ggshield release tag.
+  # - repo: https://github.com/GitGuardian/ggshield
+  #   rev: <release tag>
+  #   hooks:
+  #     - id: ggshield

@@ -1,0 +1,17 @@
+EMC Companion
+Copyright (c) 2026 NyxionSoftware (https://nyxionsoftware.com)
+
+EMC Companion is an independent project. It is not affiliated with, sponsored by,
+or endorsed by Oracle Corporation or its affiliates.
+
+Oracle, Simphony, and MICROS are trademarks or registered trademarks of Oracle
+and/or its affiliates. Other names may be trademarks of their respective owners.
+
+EMC Companion does not include, bundle, or redistribute any Oracle software,
+libraries, documentation, images, or other materials. It requires a separately
+licensed and installed Oracle Simphony EMC client, which it loads at runtime
+from the location configured by the user. Use of the EMC client remains subject
+to the user's agreement with Oracle.
+
+Third-party open-source components and their licenses are listed in
+THIRD-PARTY-NOTICES.md.

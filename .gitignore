@@ -1,0 +1,32 @@
+# Build output
+bin/
+obj/
+publish/
+artifacts/
+TestResults/
+*.binlog
+
+# Visual Studio
+.vs/
+*.user
+*.suo
+
+# Agent scratch (never committed)
+.superpowers/
+# Per-machine agent permissions and IDE settings (can contain user-profile paths)
+.claude/settings.local.json
+.idea/
+
+# Project-specific (docs/PROJECT.md sections 2.4 and 19.5)
+# Never commit Oracle or third-party proprietary binaries
+lib/emc/
+**/EMCClient/
+# Secrets and local configuration
+*.pfx
+appsettings.Local.json
+# Runtime settings written beside the exe or in %APPDATA%, never source
+settings.json
+# Logs, raw screenshots, reverse-engineering notes
+logs/
+screenshots/raw/
+REA-Notes/
