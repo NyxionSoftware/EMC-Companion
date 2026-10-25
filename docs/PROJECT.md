@@ -371,7 +371,7 @@ These come from the project history and from what a stable public 1.0 needs.
 | G24 | **CI/CD** | GitHub Actions: build and test on PR, format check, secret scan, architecture test; release on `v*` tag builds installer, update manifest, checksums, and release notes |
 | G25 | **Crash safety** | Global exception handlers; unsaved drafts are kept in memory and offered for recovery after a Bridge restart; app crash writes a scrubbed crash report locally |
 | G26 | **Privacy Policy** | `PRIVACY.md` states: no telemetry; the one automatic outbound call is the update check, which can be turned off; data is stored locally; plugin network caveat (11.6). Linked from README, Help > About (M3.1), and the installer (M11.2). Draft in M3.5, final in M13.5 |
-| G27 | **Terms of Service** | `TERMS.md` states: use of the app, no warranty, the user is responsible for their own EMC license, live writes are at the user's risk, and Apache-2.0 governs the code. Shown on the installer license page (M11.2). Draft in M3.5, final in M13.5 |
+| G27 | **Terms of Service** | `TERMS.md` states: use of the app, no warranty, the user is responsible for their own EMC license, live writes are at the user's risk, and Apache-2.0 governs the code. Linked from Help > About (M3.1) and shown on the installer license page (M11.2). Draft in M3.5, final in M13.5 |
 | G28 | **Third-party audit** | Every NuGet package (transitive included), SDK, font, icon, and image is checked against the license allow-list (MIT, Apache-2.0, BSD-2-Clause, BSD-3-Clause, ISC, OFL-1.1) and for known vulnerabilities. CI runs the vulnerable-package and license checks from M0.3; the audit is a release gate in M13.6 and repeats for every release |
 | G29 | **No dark patterns** | Principle P13 applied: every opt-in off by default; cancel, decline, and "Later" as prominent as confirm; no confirmshaming; no pre-checked boxes; no nagging; plain consent and warning text. Built into settings (M3.4), plugin consent (M9.4), update prompts (M10.1), and the installer (M11.4); PR template item from M0.3 |
 | G30 | **Asset licensing** | Every font, icon, and image is recorded in `assets/PROVENANCE.md` (source, author, license, hash) and in THIRD-PARTY-NOTICES.md, and the license files ship with the app. Fonts and icons from M2.2, installer wizard art in M11.2 |
@@ -1529,7 +1529,7 @@ The owner's uploaded per-level lists are authoritative; `docs/specs/module-inven
 | Vulnerability reports | `SECURITY.md` with a private contact (GitHub private vulnerability reporting enabled) |
 | Dependencies | Dependabot for NuGet and GitHub Actions; `dotnet list package --vulnerable` in CI |
 | Privacy Policy | `PRIVACY.md` (G26): no telemetry, the one automatic outbound call (update check, can be turned off), data stored locally, plugin network caveat. Linked from README, Help > About, and the installer |
-| Terms of Service | `TERMS.md` (G27): use of the app, no warranty, the user is responsible for their own EMC license, live writes at the user's risk; Apache-2.0 governs the code. Shown on the installer license page |
+| Terms of Service | `TERMS.md` (G27): use of the app, no warranty, the user is responsible for their own EMC license, live writes at the user's risk; Apache-2.0 governs the code. Linked from Help > About and shown on the installer license page |
 
 ---
 
@@ -1805,7 +1805,7 @@ Order note: M10 and M11 can move earlier (after M3) if the owner wants installab
 **M3.1 Shell**
 - Custom title bar, menus with icons, toolbar with context-aware commands, workspace tabs with pencil indicator, status bar.
 - Keyboard shortcuts table (8.11), Find (Ctrl+F), Help > About with NOTICE text.
-- Help > About links `PRIVACY.md` (G26).
+- Help > About links `PRIVACY.md` (G26) and `TERMS.md` (G27).
 - AC: all shortcuts work; tab pencil appears when a test view model is dirty.
 
 **M3.2 Home and module registry**
