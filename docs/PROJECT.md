@@ -267,6 +267,7 @@ Give Simphony administrators the EMC they would design for themselves: everythin
 | P10 | **Extensible by design** | Modules, exporters, inspectors, commands, settings pages, and themes are registered through the same registries plugins use |
 | P11 | **Write code as if the owner wrote it** | Consistent style (section 7), readable, block namespaces, short meaningful names |
 | P12 | **Small batches** | Every change is small enough to test in one sitting and to describe in a short "What to test" list |
+| P13 | **Honest by design** | No dark patterns. Every opt-in is off by default. Cancel, decline, and "Later" are as prominent as confirm. No confirmshaming copy, no pre-checked boxes, no nagging. Destructive actions are labeled plainly. Turning a feature off is as easy as turning it on |
 
 ---
 
@@ -285,7 +286,7 @@ Acceptance criteria:
 - [ ] Mode options: Light, Dark, Follow Windows (default). Follows changes to the Windows setting while running.
 - [ ] No proprietary fonts or icons: Lucide icons (ISC), open fonts bundled under SIL OFL with licenses in THIRD-PARTY-NOTICES.md.
 - [ ] Every built-in control (buttons, text boxes, combo boxes, check boxes, data grid, tree, tabs, menus, tooltips, dialogs, scroll bars) is styled in all six theme/mode combinations.
-- [ ] Contrast for body text meets WCAG 2.1 AA (4.5:1) in all six combinations; verified by a test that checks theme token pairs.
+- [ ] Contrast for body text meets WCAG 2.1 AA (4.5:1) in all six combinations; non-text UI (focus ring, input borders, icons, selected state) meets 3:1 (WCAG 2.1 1.4.11) in all six combinations; verified by a test that checks theme token pairs.
 - [ ] Glass theme falls back gracefully on Windows 10 (no Mica) and when "Transparency effects" is off.
 - [ ] Theme choice persists per user.
 
@@ -361,14 +362,19 @@ These come from the project history and from what a stable public 1.0 needs.
 | G15 | **Inspect tools** | Page Design Inspect (button type, SLU, dynamic, x, y, bounds), record Inspect panel (object number, hierarchy location, inheritance, raw field values behind a developer setting) |
 | G16 | **Settings** | Settings window with categories (General, EMC Connection, Appearance, Updates, Plugins, Advanced); settings stored as JSON beside exe (machine defaults) plus per-user overrides; import/export of settings |
 | G17 | **Logging and diagnostics** | Structured logs with rolling files in `%LOCALAPPDATA%`; Help > Diagnostics shows versions, EMC path, Bridge status, loaded plugins; "Copy diagnostics" produces a scrubbed report |
-| G18 | **Accessibility** | Full keyboard operation, visible focus, AutomationProperties names on all interactive controls, Narrator smoke test passes, high-contrast mode respected (falls back to system colors), text scaling up to 150% without clipping |
+| G18 | **Accessibility** | Full keyboard operation, visible focus, AutomationProperties names on all interactive controls, Narrator smoke test passes, high-contrast mode respected (falls back to system colors), text scaling up to 150% without clipping; accessible names (alt text) on every meaningful image and control, with decorative images hidden from automation; non-text contrast 3:1 (WCAG 2.1 1.4.11); a documented keyboard map |
 | G19 | **Performance** | Cold start to sign-in window under 1.5 s on a typical Windows 10 machine; table of 10,000 rows scrolls smoothly (UI virtualization); search results under 1 s for cached data; Bridge request overhead under 20 ms locally |
-| G20 | **Localization-ready** | All user-facing strings in `.resx` resources; no concatenated sentences; dates and numbers through current culture; English shipped |
+| G20 | **Localization-ready** | All user-facing strings in `.resx` resources; no concatenated sentences; dates and numbers through current culture; English shipped; language option in Settings > General > Language, defaulting to the Windows display language with English fallback; strings live only in `.resx`, so a new language needs no code change; other shipping languages per D27 |
 | G21 | **Privacy** | No telemetry; the only outbound call the app makes on its own is the update check to GitHub, which can be disabled |
 | G22 | **Testing** | Unit tests for Domain and Application, integration tests with a fake Bridge, contract tests, UI smoke tests run hidden, sample dataset, per-batch "What to test" |
 | G23 | **Documentation and wiki** | README with harness-generated screenshots, user guide, plugin developer guide, CONTRIBUTING, SECURITY, CHANGELOG, VERSIONING, ROADMAP, wiki outline |
 | G24 | **CI/CD** | GitHub Actions: build and test on PR, format check, secret scan, architecture test; release on `v*` tag builds installer, update manifest, checksums, and release notes |
 | G25 | **Crash safety** | Global exception handlers; unsaved drafts are kept in memory and offered for recovery after a Bridge restart; app crash writes a scrubbed crash report locally |
+| G26 | **Privacy Policy** | `PRIVACY.md` states: no telemetry; the one automatic outbound call is the update check, which can be turned off; data is stored locally; plugin network caveat (11.6). Linked from README, Help > About (M3.1), and the installer (M11.2). Draft in M3.5, final in M13.5 |
+| G27 | **Terms of Service** | `TERMS.md` states: use of the app, no warranty, the user is responsible for their own EMC license, live writes are at the user's risk, and Apache-2.0 governs the code. Shown on the installer license page (M11.2). Draft in M3.5, final in M13.5 |
+| G28 | **Third-party audit** | Every NuGet package (transitive included), SDK, font, icon, and image is checked against the license allow-list (MIT, Apache-2.0, BSD-2-Clause, BSD-3-Clause, ISC, OFL-1.1) and for known vulnerabilities. CI runs the vulnerable-package and license checks from M0.3; the audit is a release gate in M13.6 and repeats for every release |
+| G29 | **No dark patterns** | Principle P13 applied: every opt-in off by default; cancel, decline, and "Later" as prominent as confirm; no confirmshaming; no pre-checked boxes; no nagging; plain consent and warning text. Built into settings (M3.4), plugin consent (M9.4), update prompts (M10.1), and the installer (M11.4); PR template item from M0.3 |
+| G30 | **Asset licensing** | Every font, icon, and image is recorded in `assets/PROVENANCE.md` (source, author, license, hash) and in THIRD-PARTY-NOTICES.md, and the license files ship with the app. Fonts and icons from M2.2, installer wizard art in M11.2 |
 
 ### 5.7 Out of scope for v1.0.0
 
@@ -376,7 +382,7 @@ These come from the project history and from what a stable public 1.0 needs.
 - Delete for menu items (planned for v1.1 with the rules in 3.2).
 - Multi-enterprise simultaneous sessions.
 - A plugin gallery or online store (v1 installs from .zip or folder).
-- Localized languages other than English.
+- Shipping languages beyond those decided in D27 (the language option itself ships in v1).
 - macOS or Linux.
 
 ---
@@ -878,6 +884,15 @@ Warm, calm, low-glare. Soft clay orange accent on near-black warm greys in Dark;
 | `Row.Inherited` | `#F4F2EC` (italic text) | `#262523` (italic text) |
 | `Focus.Ring` | `#C96442` | `#E38A6C` |
 
+**Contrast check (2026-10-24).** Against WCAG 2.1 AA, these pairs fail:
+
+- Light: `Text.OnAccent` `#FFFFFF` on `Accent.Primary` `#C96442` (primary buttons) is 3.9:1, needs 4.5:1.
+- Light: `Accent.Primary` `#C96442` as link text on `Surface.Base` `#FAF9F5` is 3.7:1, needs 4.5:1.
+- Light: `Border.Strong` on `Surface.Sunken` (input border) is 1.45:1, needs 3:1.
+- Dark: `Border.Strong` on `Surface.Sunken` is 2.3:1, needs 3:1.
+
+Fixed in M2 before the theme ships.
+
 Shape and spacing: radius 6/10/14, 8 px spacing grid, 1 px subtle borders, soft shadows only on dialogs and popups.
 
 ### 8.4 Theme 2: EMC
@@ -899,6 +914,13 @@ A respectful, modernized take on the EMC client's design philosophy. EMC is a de
 | `Accent.Hover` | `#184C88` | `#6AA4E0` |
 | `Row.Dirty` | `#FFF2A8` | `#4D4518` |
 | `Focus.Ring` | `#1F5FA8` | `#6AA4E0` |
+
+**Contrast check (2026-10-24).** Against WCAG 2.1 AA, these pairs fail:
+
+- Light: `Border.Strong` on `Surface.Sunken` (input border) is 2.35:1, needs 3:1.
+- Dark: `Border.Strong` on `Surface.Sunken` is 2.69:1, needs 3:1.
+
+Fixed in M2 before the theme ships.
 
 Shape: radius 2/3/4, Compact density default, toolbar shows icon plus label, Segoe UI-like open sans for body text (see 8.6), no serif display face.
 
@@ -924,6 +946,12 @@ Inspired by the layered translucency of Apple's Liquid Glass design language whi
 | `Border.Subtle` | `#FFFFFF59` | `#FFFFFF1F` |
 | `Text.Primary` | `#1F1E1D` | `#F5F2EC` |
 | `Accent.Primary` | `#C96442` | `#D97757` |
+
+**Contrast check (2026-10-24).** Against WCAG 2.1 AA, this pair fails (the same accent failure as Claude Light):
+
+- Light: `Text.OnAccent` `#FFFFFF` on `Accent.Primary` `#C96442` (primary buttons) is 3.9:1, needs 4.5:1.
+
+Fixed in M2 before the theme ships.
 
 ### 8.6 Typography
 
@@ -1025,6 +1053,8 @@ No Anthropic proprietary typefaces are used or bundled.
 - Tab order follows visual order; no focus traps (lesson from the eye toggle).
 - Color is never the only signal: dirty rows also show a pencil glyph in the row header; inherited rows show a branch glyph and italics.
 - High contrast and text scaling supported (5.6 G18).
+- Every meaningful image has an accessible name (alt text); decorative images are hidden from automation (5.6 G18).
+- Full keyboard navigation: every feature is reachable without a mouse, and the keyboard map (the shortcuts in 8.11 plus navigation keys) is documented and kept current (5.6 G18).
 
 ---
 
@@ -1498,6 +1528,8 @@ The owner's uploaded per-level lists are authoritative; `docs/specs/module-inven
 | Elevation | App runs as a standard user; only the installer elevates |
 | Vulnerability reports | `SECURITY.md` with a private contact (GitHub private vulnerability reporting enabled) |
 | Dependencies | Dependabot for NuGet and GitHub Actions; `dotnet list package --vulnerable` in CI |
+| Privacy Policy | `PRIVACY.md` (G26): no telemetry, the one automatic outbound call (update check, can be turned off), data stored locally, plugin network caveat. Linked from README, Help > About, and the installer |
+| Terms of Service | `TERMS.md` (G27): use of the app, no warranty, the user is responsible for their own EMC license, live writes at the user's risk; Apache-2.0 governs the code. Shown on the installer license page |
 
 ---
 
@@ -1606,6 +1638,9 @@ Milestone M?, Batch M?.? : <title>
 - [ ] No secrets, hosts, credentials, or customer data (sample data only)
 - [ ] No live EMC writes without Save to EMC opt-in; first live write used the test item and has owner OK
 - [ ] Docs updated (README, specs, TESTING.md) if behavior changed
+- [ ] UI changes: controls and meaningful images have accessible names, everything is reachable by keyboard, and contrast meets 4.5:1 for text and 3:1 for non-text UI (G18)
+- [ ] No dark patterns: opt-ins off by default, decline as prominent as accept, plain wording (P13, G29)
+- [ ] Every new package, font, icon, or image is recorded with its license (G28, G30)
 ```
 
 ### 15.4 Versioning
@@ -1703,6 +1738,8 @@ Order note: M10 and M11 can move earlier (after M3) if the owner wants installab
 - `ci.yml`: restore, build, test, `dotnet format --verify-no-changes`, gitleaks, architecture tests on `windows-latest`.
 - Architecture tests for 6.3 rules and block namespaces.
 - PR template, issue templates, labels.
+- CI adds the vulnerable-package check (`dotnet list package --vulnerable --include-transitive`) and a license allow-list check (G28).
+- PR template adds checklist items for accessibility, no dark patterns, and asset licenses (G18, P13, G29, G30).
 - AC: CI green; a deliberate file-scoped namespace fails CI.
 
 **M0.4 Docs baseline**
@@ -1740,18 +1777,23 @@ Order note: M10 and M11 can move earlier (after M3) if the owner wants installab
 
 **M2.1 Theme engine**
 - Token contract, theme manifest, `ThemeService`, Follow Windows, persistence, token validation test.
+- Token validation test also checks the 3:1 non-text pairs: focus ring, input border, icons, selected state (G1, G18).
 - AC: switching mode live updates all open windows.
 
 **M2.2 Claude theme**
 - Fonts (Source Serif 4, Inter, JetBrains Mono) bundled with OFL licenses; Lucide geometry tool; control styles for core controls.
+- Every font and icon recorded in `assets/PROVENANCE.md` (source, author, license, hash) and THIRD-PARTY-NOTICES.md, license files shipped (G30).
+- Fix the Claude contrast failures listed in 8.3 before the theme ships (G1, G18).
 - AC: all controls styled in Light and Dark; contrast test passes.
 
 **M2.3 EMC theme**
 - Compact density, square-ish shapes, blue selection, icon+label toolbar.
+- Fix the EMC contrast failures listed in 8.4 before the theme ships (G1, G18).
 - AC: owner confirms it "feels like EMC, but cleaner".
 
 **M2.4 Glass theme**
 - Mica/Acrylic interop, Windows 10 fallback, transparency-off fallback, readable data surfaces.
+- Fix the Glass Light accent contrast failure listed in 8.5 before the theme ships (G1, G18).
 - AC: works on Windows 11 and Windows 10 VM; disabling transparency falls back without restart.
 
 **M2.5 Theme picker and preview**
@@ -1763,6 +1805,7 @@ Order note: M10 and M11 can move earlier (after M3) if the owner wants installab
 **M3.1 Shell**
 - Custom title bar, menus with icons, toolbar with context-aware commands, workspace tabs with pencil indicator, status bar.
 - Keyboard shortcuts table (8.11), Find (Ctrl+F), Help > About with NOTICE text.
+- Help > About links `PRIVACY.md` (G26).
 - AC: all shortcuts work; tab pencil appears when a test view model is dirty.
 
 **M3.2 Home and module registry**
@@ -1776,10 +1819,13 @@ Order note: M10 and M11 can move earlier (after M3) if the owner wants installab
 
 **M3.4 Settings window**
 - Categories, layered settings (machine + user), import/export, Save to EMC toggle with warning.
+- Language option in Settings > General > Language: Windows display language by default, English fallback, strings only in `.resx` (G20).
+- Every opt-in off by default, plain consent and warning text, turning a setting off as easy as turning it on (P13, G29).
 - AC: setting changes persist; machine default from `appsettings.json` overridden per user.
 
 **M3.5 Logging and diagnostics**
 - Serilog setup, scrubbing, Help > Diagnostics, Copy diagnostics, global exception handlers.
+- Draft `PRIVACY.md` and `TERMS.md` (G26, G27).
 - AC: forced exception shows friendly dialog and a scrubbed log entry.
 
 ### M4: Menu Item Maintenance (v0.5.0)
@@ -1844,13 +1890,13 @@ Order note: M10 and M11 can move earlier (after M3) if the owner wants installab
 **M9.1 Abstractions and manifest** (align with SimulcastUtilitySuite conventions; `IPlugin`, `IPluginContext`, capabilities; manifest validation).
 **M9.2 Loader** (collectible ALC, shared assemblies, shadow copy, unload verification, fault isolation, safe mode).
 **M9.3 Capabilities wiring** (commands, workspaces, exporters, inspectors, settings pages, themes).
-**M9.4 Plugin Manager UI** (install zip/folder, enable/disable, reload, uninstall, permissions consent, write grant).
+**M9.4 Plugin Manager UI** (install zip/folder, enable/disable, reload, uninstall, permissions consent, write grant; consent wording per G29: plain text, decline as prominent as accept, nothing pre-checked).
 **M9.5 Sample plugin and docs** (HelloCompanion, plugin guide, wiki outline, NuGet pack for Abstractions).
 - AC: HelloCompanion installs, works, reloads after a rebuild, and unloads with the context collected.
 
 ### M10: Updater and patch notes (v0.11.0)
 
-**M10.1 Release client** (GitHub API, ETag, channels, SemVer comparison, skip/remind).
+**M10.1 Release client** (GitHub API, ETag, channels, SemVer comparison, skip/remind; update prompts per G29: Skip and Remind me later as prominent as Update, no nagging).
 **M10.2 Patch notes viewer** (Markdig rendering, cache, What's New after update).
 **M10.3 Download, verify, hand-off** (SHA-256, signature when available, silent installer launch, drafts check).
 **M10.4 Release workflow** (`release.yml`, manifest generation, CHANGELOG extraction).
@@ -1859,9 +1905,9 @@ Order note: M10 and M11 can move earlier (after M3) if the owner wants installab
 ### M11: Installer (v0.12.0)
 
 **M11.1 Script and build** (`EmcCompanion.iss`, `Publish.ps1`, Oracle deny-list check).
-**M11.2 Theming** (wizard images, colors, texts).
+**M11.2 Theming** (wizard images, colors, texts; wizard art recorded in `assets/PROVENANCE.md` per G30; Privacy Policy link per G26; Terms on the license page per G27).
 **M11.3 EMC path page** (default, browse, validation, write to appsettings).
-**M11.4 Scenarios** (upgrade, same-version repair, downgrade confirm, uninstall keep/remove settings, silent switches).
+**M11.4 Scenarios** (upgrade, same-version repair, downgrade confirm, uninstall keep/remove settings, silent switches; installer prompts per G29: nothing pre-checked, decline as prominent as accept).
 **M11.5 Prerequisites and signing hooks** (runtime decision, .NET Framework 4.8 check, `Sign.ps1`).
 - AC: all scenarios in 10.4 pass on a clean Windows 10 x64 VM and Windows 11.
 
@@ -1874,12 +1920,12 @@ Order note: M10 and M11 can move earlier (after M3) if the owner wants installab
 
 ### M13: Hardening and v1.0.0
 
-**M13.1 Accessibility pass** (Narrator, keyboard-only, high contrast, 150% scaling).
+**M13.1 Accessibility pass** (Narrator, keyboard-only, high contrast, 150% scaling; G18 audit of accessible names, 3:1 non-text contrast, and the keyboard map).
 **M13.2 Performance pass** (startup, 10k rows, Bridge overhead; fix regressions).
 **M13.3 Reliability pass** (Bridge chaos test: kill, hang, slow; draft recovery).
 **M13.4 Read-only P2 modules** (Discounts, Tender/Media, Service Charges, Page Assignment, Roles, Audit Trail).
-**M13.5 Docs and wiki** (user guide, plugin guide, screenshots regenerated, wiki pages).
-**M13.6 Release candidate** (`1.0.0-preview.N` on Preview channel, owner sign-off, then `v1.0.0`).
+**M13.5 Docs and wiki** (user guide, plugin guide, screenshots regenerated, wiki pages; final `PRIVACY.md` and `TERMS.md` per G26 and G27, legal review per D26).
+**M13.6 Release candidate** (`1.0.0-preview.N` on Preview channel, owner sign-off, then `v1.0.0`; G28 third-party audit as the release gate, repeated for every release).
 - AC: every checkbox in section 5 checked.
 
 ### Post-1.0 ideas
@@ -2139,6 +2185,8 @@ The table lists every batch from this section as an initial card, so the board c
 | D23 | Branch content | Source only vs committing build output or binaries | Source only; CI builds release binaries and attaches them to GitHub Releases | Source only; no build output or binaries in any branch. Release binaries are built by CI and attached to GitHub Releases |
 | D24 | Charter location | Charter kept outside the repo vs inside the repo | Inside the repo as `docs/PROJECT.md`, scrubbed of environment details | The charter lives in the repo as `docs/PROJECT.md`, scrubbed of environment details, and is updated by PR like any doc |
 | D25 | Solution format | `EmcCompanion.sln` vs `EmcCompanion.slnx` | `.slnx` (.NET 10 default) | `EmcCompanion.slnx` (.NET 10 default; the owner's Visual Studio 2022 17.14 and 2026 18.10 both open it) |
+| D26 | Legal review of the Privacy Policy and Terms of Service (G26, G27) | Legal review before v1.0, legal review after v1.0, or no review | Yes, review before v1.0 | _pending_ |
+| D27 | UI languages shipped at v1 (G20) | English only, English plus the language option and a pseudo-locale for testing, or more languages at v1 (for example Spanish and French) | English plus the language option and a pseudo-locale for testing; more languages after 1.0 unless the owner wants them sooner | _pending_ |
 
 ---
 
