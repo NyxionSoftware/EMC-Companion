@@ -9,7 +9,7 @@
 
 > Master project charter. Owner: NyxionSoftware. Copyright (c) 2026 NyxionSoftware (https://nyxionsoftware.com).
 
-EMC Companion is a passion project by NyxionSoftware: a modern, themeable, plugin-capable desktop companion for the Oracle Simphony Enterprise Management Console (EMC). A small 32-bit .NET Framework **Bridge** process loads the EMC client libraries that are already installed on the user's machine, talks to Simphony on the app's behalf, and translates the results into a versioned contract that the 64-bit **.NET 10 WPF** application can read, understand, and edit. EMC Companion never ships, copies, or redistributes any Oracle component. Without a licensed, locally installed EMC client it does nothing. On top of EMC parity it adds what administrators have wanted for years: a clean Claude-inspired interface with Light and Dark modes and three themes, a safe pending-change model, hierarchy awareness, formatted exports, inspection tools, in-app updates, a themed installer, and a live-loading plugin API.
+EMC Companion is a passion project by NyxionSoftware: a modern, themeable, plugin-capable desktop companion for the Oracle Simphony Enterprise Management Console (EMC). A small .NET Framework **Bridge** process loads the EMC client libraries that are already installed on the user's machine, talks to Simphony on the app's behalf, and translates the results into a versioned contract that the 64-bit **.NET 10 WPF** application can read, understand, and edit. EMC Companion never ships, copies, or redistributes any Oracle component. Without a licensed, locally installed EMC client it does nothing. On top of EMC parity it adds what administrators have wanted for years: a clean Claude-inspired interface with Light and Dark modes and three themes, a safe pending-change model, hierarchy awareness, formatted exports, inspection tools, in-app updates, a themed installer, and a live-loading plugin API.
 
 This document is the single source of truth for scope, rules, architecture, and the batch-by-batch roadmap. Work proceeds in small batches: build a small feature, the owner edits/tests/gives feedback, then the next batch begins.
 
@@ -53,10 +53,10 @@ EMC Companion is a Windows desktop application that lets Oracle Simphony adminis
 | Author / owner | NyxionSoftware (personally owned; not affiliated with any employer) |
 | Copyright | Copyright (c) 2026 NyxionSoftware (https://nyxionsoftware.com) |
 | App platform | .NET 10, WPF, Windows 10 or later, 64-bit |
-| Bridge platform | .NET Framework 4.8 (minimum 4.6.2 compatible), x86 (32-bit) |
+| Bridge platform | .NET Framework 4.8 (minimum 4.6.2 compatible), x64 by default (`BridgePlatform=x86` build switch kept until M1.3 verifies x64 with a live sign-in) |
 | Target EMC | Simphony EMC client 19.10.2.0.27 (`EMC.exe` is an AnyCPU .NET Framework 4.6.2 executable with a WinForms UI; it runs 64-bit on x64 Windows) |
 | Repository | public `NyxionSoftware/EMC-Companion`; legacy private repo `EMC-Companion-Legacy` |
-| Lineage | Continues the version line of the owner's "EMC Export Utility" (v0.7.1) and the private .NET 8 "EMC Companion" iteration |
+| Lineage | Continues the version line of the owner's "EMC Export Utility" (v0.7.1) and the private .NET 8 "EMC Companion" iteration, which now lives in the private `EMC-Companion-Legacy` repo |
 
 ### 1.2 Who it is for
 
@@ -77,7 +77,7 @@ EMC Companion is a Windows desktop application that lets Oracle Simphony adminis
 ```
 +-------------------------------+        named pipe (local, per user)       +-------------------------------+
 | EMC Companion (.NET 10, x64)  | <--------- versioned JSON contract -----> | EMC Companion Bridge          |
-| WPF UI, themes, plugins,      |                                            | (.NET Framework 4.8, x86)     |
+| WPF UI, themes, plugins,      |                                            | (.NET Framework 4.8, x64)     |
 | pending changes, exports      |                                            | loads EMC libs from the       |
 +-------------------------------+                                            | user's EMC install folder     |
                                                                              +---------------+---------------+
@@ -351,7 +351,7 @@ These come from the project history and from what a stable public 1.0 needs.
 |---|---|---|
 | G6 | **Bridge reliability** | Bridge started and supervised by the app; heartbeat every 5 s; automatic restart and reconnect with backoff (1, 2, 5, 10 s, then manual); in-flight requests fail with a clear message; session re-established after restart without re-entering password when the user opted into remembered credentials; status indicator in the status bar (Connected, Reconnecting, Offline) |
 | G7 | **Contract versioning** | Handshake exchanges contract version; app refuses a mismatched Bridge with a clear message; Bridge and app always ship together in one installer |
-| G8 | **Sign-in and EMC detection** | Detects EMC at default path, validates required files exist and are 32-bit .NET Framework assemblies, offers browse, remembers path; sign-in with show-password toggle that never traps focus; Remember me via Credential Manager (opt-in) |
+| G8 | **Sign-in and EMC detection** | Detects EMC at default path, validates required files exist and are .NET Framework assemblies, offers browse, remembers path; sign-in with show-password toggle that never traps focus; Remember me via Credential Manager (opt-in) |
 | G9 | **Hierarchy navigation** | Tree of Enterprise > Zones > Properties > RVCs with search-as-you-type, keyboard navigation, recent locations, breadcrumb, and "Open at <level>" jumps; lazy loading for large enterprises |
 | G10 | **Home and search** | One search field above section tabs; searches module names and, for supported modules, records (object number or name); per-level sections follow Appendix 19.1; tiles respect disabled modules and role view access |
 | G11 | **Module parity for v1** | Modules marked P1 in section 12 at parity: Menu Item Maintenance, Menu Item Classes, Print Classes, Major Groups, Family Groups, Descriptors set, Page Design (read and edit), Workstations, Printers (read) |
@@ -433,7 +433,7 @@ EMC-Companion/
 |   |-- EmcCompanion.Application/        # net10.0
 |   |-- EmcCompanion.Infrastructure/     # net10.0-windows
 |   |-- EmcCompanion.Presentation/       # net10.0-windows, WPF, the exe
-|   |-- EmcCompanion.Bridge/             # net48, x86, the bridge exe
+|   |-- EmcCompanion.Bridge/             # net48, x64, the bridge exe
 |   |-- EmcCompanion.Bridge.Contracts/   # netstandard2.0
 |   |-- EmcCompanion.Plugins.Abstractions/ # net10.0
 |   `-- EmcCompanion.Updater/            # net10.0-windows, update logic library
@@ -473,7 +473,7 @@ EMC-Companion/
 | `EmcCompanion.Application` | net10.0 | Use cases, services, interfaces (ports): `IEmcGateway`, `ISettingsStore`, `ICredentialStore`, `IExporter`, `IChangeTracker`, module registry, search, pending-change logic | Domain, Plugins.Abstractions |
 | `EmcCompanion.Infrastructure` | net10.0-windows | Adapters: Bridge client over named pipes, Bridge process supervisor, settings JSON, Credential Manager/DPAPI, Excel export (ClosedXML), logging setup, plugin loader | Application, Domain, Bridge.Contracts, Plugins.Abstractions |
 | `EmcCompanion.Presentation` | net10.0-windows (WPF) | Views, view models, theming, controls, composition root (Generic Host) | Application, Domain, Infrastructure (composition only), Plugins.Abstractions, Updater |
-| `EmcCompanion.Bridge` | net48, x86 | Hosts EMC libraries, pipe server, maps EMC objects to contract DTOs, executes reads and writes | Bridge.Contracts only (plus EMC at runtime) |
+| `EmcCompanion.Bridge` | net48, x64 | Hosts EMC libraries, pipe server, maps EMC objects to contract DTOs, executes reads and writes | Bridge.Contracts only (plus EMC at runtime) |
 | `EmcCompanion.Bridge.Contracts` | netstandard2.0 | DTOs, request/response envelopes, operation names, contract version, error codes | nothing |
 | `EmcCompanion.Plugins.Abstractions` | net10.0 | Public plugin API: `IPlugin`, `IPluginContext`, capability interfaces, read-only domain views | nothing (deliberately dependency-free; exposes its own DTOs) |
 | `EmcCompanion.Updater` | net10.0-windows | GitHub Releases client, manifest parsing, hash and signature verification, installer hand-off | Application (ports) |
@@ -510,7 +510,7 @@ Rules, enforced by `EmcCompanion.Architecture.Tests` (NetArchTest or equivalent)
 | Process | Bitness | Lifetime |
 |---|---|---|
 | `EmcCompanion.exe` | x64 | User-launched |
-| `EmcCompanion.Bridge.exe` | x86 | Started by the app after the EMC path is validated; one per app instance; terminated when the app exits (Job Object with kill-on-close so it never orphans) |
+| `EmcCompanion.Bridge.exe` | x64 (default) | Started by the app after the EMC path is validated; one per app instance; terminated when the app exits (Job Object with kill-on-close so it never orphans) |
 
 The Bridge sets its probing path to the configured EMC folder through an `AppDomain.AssemblyResolve` handler, and runs with a generated `EmcCompanion.Bridge.exe.config` that includes the binding redirects EMC needs (documented behaviorally in `docs/emc/`). The Bridge has no UI. If EMC libraries require an STA thread or a synchronization context, the Bridge runs a dedicated STA worker thread with a message loop and marshals every EMC call onto it.
 
@@ -1192,7 +1192,7 @@ Unsigned installers trigger SmartScreen warnings. Options: an OV/EV code signing
 1. Read `<Version>` from `Directory.Build.props`.
 2. `dotnet restore` and `dotnet test` (skippable with `-SkipTests`).
 3. `dotnet publish src/EmcCompanion.Presentation -c Release -r win-x64 --self-contained true -p:PublishSingleFile=false -o publish/app`.
-4. `dotnet publish src/EmcCompanion.Bridge -c Release -o publish/app/bridge` (net48 x86, built with the `FakeEmcSession` excluded in Release and the reflection adapter included).
+4. `dotnet publish src/EmcCompanion.Bridge -c Release -o publish/app/bridge` (net48 x64, built with the `FakeEmcSession` excluded in Release and the reflection adapter included).
 5. Copy NOTICE, LICENSE, THIRD-PARTY-NOTICES.md into `publish/app`.
 6. Optional `Sign.ps1` on executables.
 7. `ISCC.exe installer/EmcCompanion.iss /DAppVersion=$version /DSourceDir=publish/app /Oartifacts`.
@@ -1509,7 +1509,7 @@ The owner's uploaded per-level lists are authoritative; `docs/specs/module-inven
 |---|---|---|
 | Unit | `Domain.Tests`, `Application.Tests` | Value objects, validation, change tracker, save scopes, inheritance rules, search, version comparison, manifest validation |
 | Contract | `Bridge.Contracts.Tests` | DTO round-trip serialization, envelope compatibility, contract version rules |
-| Integration | `Infrastructure.Tests` | Bridge client against `FakeEmcSession` running in a real Bridge process (x86) on CI Windows runners; settings layering; Credential Manager wrapper; Excel exporter output (open and assert cells) |
+| Integration | `Infrastructure.Tests` | Bridge client against `FakeEmcSession` running in a real Bridge process (x64) on CI Windows runners; settings layering; Credential Manager wrapper; Excel exporter output (open and assert cells) |
 | Plugin | `Infrastructure.Tests` | Load, unload (assert collected), reload, fault isolation using test plugins built in the test run |
 | Presentation | `Presentation.Tests` | View model tests; hidden UI smoke tests (windows created off-screen, `ShowActivated=false`, never on the owner's visible desktop) for: startup, sign-in eye toggle focus, theme switch, open MIM, edit cell, Save blocked when Save to EMC off |
 | Architecture | `Architecture.Tests` | Dependency rules (6.3), namespace style, no file-scoped namespaces |
@@ -1696,8 +1696,8 @@ Order note: M10 and M11 can move earlier (after M3) if the owner wants installab
 **M0.2 Solution skeleton**
 - Create all `src/` and `tests/` projects with targets in 6.2; `Directory.Build.props` with `<Version>0.1.0</Version>`; `Directory.Packages.props`; `global.json`.
 - Generic Host composition root; empty shell window that opens and closes.
-- Bridge project (net48 x86) that starts, prints version, exits.
-- AC: `dotnet build` and `dotnet test` pass on Windows; app window opens; Bridge runs as 32-bit.
+- Bridge project (net48 x64) that starts, prints version, exits.
+- AC: `dotnet build` and `dotnet test` pass on Windows; app window opens; Bridge runs as 64-bit.
 
 **M0.3 CI and architecture tests**
 - `ci.yml`: restore, build, test, `dotnet format --verify-no-changes`, gitleaks, architecture tests on `windows-latest`.
@@ -2171,7 +2171,7 @@ The table lists every batch from this section as an initial card, so the board c
 | **Itemizer** | Sales bucket used for discounts, service charges, and taxes |
 | **Workstation** | POS client device |
 | **KDS** | Kitchen Display System |
-| **Bridge** | EMC Companion's 32-bit .NET Framework helper process that hosts EMC libraries |
+| **Bridge** | EMC Companion's .NET Framework helper process that hosts EMC libraries |
 | **Contract** | The versioned DTO and operation set shared by app and Bridge |
 | **Pending change / draft** | An edit or new record not yet saved to EMC |
 | **Save to EMC** | Setting that allows live writes; off by default |
