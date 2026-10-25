@@ -1,0 +1,96 @@
+# EMC Companion code style. Encodes docs/PROJECT.md section 7.
+# CI runs `dotnet format --verify-no-changes` and builds with EnforceCodeStyleInBuild=true.
+root = true
+
+[*]
+charset = utf-8
+end_of_line = crlf
+insert_final_newline = true
+trim_trailing_whitespace = true
+indent_style = space
+indent_size = 4
+
+[*.{csproj,props,targets,slnx,json,xaml,yml,yaml,config,manifest}]
+indent_size = 2
+
+[*.md]
+trim_trailing_whitespace = false
+
+[*.cs]
+
+# Namespaces: block-scoped, never file-scoped. With block_scoped preferred, the build
+# reports a file-scoped namespace as IDE0160 (error via the option severity).
+csharp_style_namespace_declarations = block_scoped:error
+dotnet_diagnostic.IDE0161.severity = error
+
+# Usings: outside the namespace, System first, one blank line between groups
+csharp_using_directive_placement = outside_namespace:error
+dotnet_diagnostic.IDE0065.severity = error
+dotnet_sort_system_directives_first = true
+dotnet_separate_import_directive_groups = true
+
+# Braces: Allman style, always braces
+csharp_new_line_before_open_brace = all
+csharp_prefer_braces = true:error
+dotnet_diagnostic.IDE0011.severity = error
+
+# Unnecessary usings, explicit accessibility modifiers, readonly fields
+dotnet_diagnostic.IDE0005.severity = error
+dotnet_style_require_accessibility_modifiers = always
+dotnet_diagnostic.IDE0040.severity = error
+dotnet_diagnostic.IDE0044.severity = error
+
+# var: when the type is obvious from the right side, explicit types otherwise
+csharp_style_var_when_type_is_apparent = true:suggestion
+csharp_style_var_elsewhere = false:suggestion
+
+# Naming rules. Roslyn applies the first matching rule, so the more specific
+# rules come first: constants (including private const) before private fields.
+# IDE1006 must be set explicitly, otherwise the naming analyzer does not run in the build.
+dotnet_diagnostic.IDE1006.severity = error
+
+# Constants: PascalCase
+dotnet_naming_rule.constants_pascal_case.symbols = constant_symbols
+dotnet_naming_rule.constants_pascal_case.style = pascal_case_style
+dotnet_naming_rule.constants_pascal_case.severity = error
+
+dotnet_naming_symbols.constant_symbols.applicable_kinds = field, local
+dotnet_naming_symbols.constant_symbols.applicable_accessibilities = *
+dotnet_naming_symbols.constant_symbols.required_modifiers = const
+
+# Async methods: Async suffix
+dotnet_naming_rule.async_methods_end_with_async.symbols = async_method_symbols
+dotnet_naming_rule.async_methods_end_with_async.style = async_suffix_style
+dotnet_naming_rule.async_methods_end_with_async.severity = error
+
+dotnet_naming_symbols.async_method_symbols.applicable_kinds = method, local_function
+dotnet_naming_symbols.async_method_symbols.applicable_accessibilities = *
+dotnet_naming_symbols.async_method_symbols.required_modifiers = async
+
+# Interfaces: I prefix
+dotnet_naming_rule.interfaces_begin_with_i.symbols = interface_symbols
+dotnet_naming_rule.interfaces_begin_with_i.style = interface_prefix_style
+dotnet_naming_rule.interfaces_begin_with_i.severity = error
+
+dotnet_naming_symbols.interface_symbols.applicable_kinds = interface
+dotnet_naming_symbols.interface_symbols.applicable_accessibilities = *
+
+# Private fields: _camelCase
+dotnet_naming_rule.private_fields_underscore_camel_case.symbols = private_field_symbols
+dotnet_naming_rule.private_fields_underscore_camel_case.style = underscore_camel_case_style
+dotnet_naming_rule.private_fields_underscore_camel_case.severity = error
+
+dotnet_naming_symbols.private_field_symbols.applicable_kinds = field
+dotnet_naming_symbols.private_field_symbols.applicable_accessibilities = private
+
+# Naming styles
+dotnet_naming_style.pascal_case_style.capitalization = pascal_case
+
+dotnet_naming_style.async_suffix_style.capitalization = pascal_case
+dotnet_naming_style.async_suffix_style.required_suffix = Async
+
+dotnet_naming_style.interface_prefix_style.capitalization = pascal_case
+dotnet_naming_style.interface_prefix_style.required_prefix = I
+
+dotnet_naming_style.underscore_camel_case_style.capitalization = camel_case
+dotnet_naming_style.underscore_camel_case_style.required_prefix = _

@@ -1,0 +1,12 @@
+# The repository stores LF; the working tree uses CRLF (matches .editorconfig).
+* text=auto eol=crlf
+
+# Binary files: never convert or diff as text
+*.png binary
+*.ico binary
+*.jpg binary
+*.gif binary
+*.ttf binary
+*.otf binary
+*.woff binary
+*.woff2 binary
