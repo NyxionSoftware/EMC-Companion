@@ -62,6 +62,8 @@ these outcomes into the charter's "Owner decision" column.
 | D23 | Branch content (new) | Source only; no build output or binaries in any branch. Release binaries are built by CI and attached to GitHub Releases |
 | D24 | Charter location (new) | The charter lives in the repo as `docs/PROJECT.md`, scrubbed of environment details, and is updated by PR like any doc |
 | D25 | Solution format (new) | `EmcCompanion.slnx` (.NET 10 default; the owner's Visual Studio 2022 17.14 and 2026 18.10 both open it) |
+| D26 | Legal review of Privacy Policy and Terms of Service (new, section 12) | Pending; recommendation: yes, before v1.0 |
+| D27 | UI languages shipped at v1 (new, section 12) | Pending; recommendation: English plus the language option and a pseudo-locale for testing; more languages after 1.0 unless the owner wants them sooner |
 
 ## 3. Corrections from REA pass 01
 
@@ -145,6 +147,7 @@ Tasks:
 6. `.gitignore`, `.gitattributes`, `.editorconfig` (section 6.4),
    `.pre-commit-config.yaml` (gitleaks pinned; ggshield optional, documented).
 7. `CODEOWNERS` (`* @NyxionSoftware`).
+8. Charter amendment for the section 12 requirements (added after approval).
 
 Charter scrub and update rules for `docs/PROJECT.md`:
 
@@ -220,14 +223,18 @@ arrives in M3.5. No EMC code paths exist in M0.
 ### 6.4 `.editorconfig`
 
 Starts from the legacy `.editorconfig` (block namespaces, Allman braces, sorted
-System usings) and raises these to `error`: `IDE0161` (block-scoped namespaces),
+System usings) and raises these to `error`: `IDE0160` (reported for a file-scoped
+namespace when block-scoped is preferred; corrected from IDE0161 during M0.1),
+`IDE1006` (naming rules only fail a build with this set),
 `IDE0011` (braces), `IDE0005` (unused usings), `IDE0040` (explicit accessibility),
 `IDE0044` (readonly fields), `IDE0065` with
 `csharp_using_directive_placement = outside_namespace` (Visual Studio default usings).
 Sets `dotnet_separate_import_directive_groups = true` so System, project and
 third-party usings form separate groups as in charter 7.3. Adds naming rules for
 `_camelCase` private fields, `I`-prefixed interfaces, `Async` suffix, and PascalCase
-constants (charter 7.2).
+constants (charter 7.2). Explicit accessibility applies to non-interface members only
+(charter 11.3 declares interface members without modifiers). The `Async` suffix rule is
+off under `tests/`, where charter 7.4 test names (`Method_State_Expected`) apply.
 
 ### 6.5 Local deploy script
 
@@ -264,7 +271,10 @@ Runner `windows-latest`. Concurrency group per ref, cancel in progress.
 Job `build` steps: checkout (full history for gitleaks), setup-dotnet from
 `global.json`, `dotnet restore --locked-mode`, `dotnet format --verify-no-changes`,
 `dotnet build -c Release`, `dotnet test -c Release --no-build` (includes the
-source-only test, 4.3), run the Bridge exe and assert it reports `64-bit`, gitleaks
+source-only test, 4.3), run the Bridge exe and assert it reports `64-bit`,
+`dotnet list package --vulnerable --include-transitive` (fails on any finding), a
+license check with the `nuget-license` local tool against the allow-list MIT,
+Apache-2.0, BSD-2-Clause, BSD-3-Clause, ISC, OFL-1.1 (G28, section 12), gitleaks
 CLI (pinned release, checksum-verified, `gitleaks git` over the history; run directly
 so no action license is needed).
 
@@ -289,7 +299,10 @@ commit SHAs; Dependabot keeps them current.
 
 ### 7.3 Repo automation
 
-- `.github/pull_request_template.md` (charter 15.3, with the Trello card line).
+- `.github/pull_request_template.md` (charter 15.3, with the Trello card line, plus
+  three section 12 checklist items: accessible names, keyboard reach and contrast for
+  any UI change; no dark patterns; every new package, font, icon or image recorded
+  with its license).
 - Issue forms `bug_report.yml`, `feature_request.yml`, and `config.yml` pointing
   security reports to private reporting.
 - Labels from charter 15.7, created with `gh label create`.
@@ -353,3 +366,34 @@ screenshot harness, installer, updater, plugins, release workflow.
 | R3 | Bridge's System.Text.Json conflicts with EMC's 8.0.0.5 | Bridge pins System.Text.Json 8.0.x in M1.1 and redirects to it; if that fails, the Bridge uses the redirect target EMC ships |
 | R4 | GitHub push protection does not catch the test pattern | The pre-commit gitleaks hook and the CI gitleaks step are independent backstops |
 | R5 | Legacy PR content becomes public by accident | Only the renamed private repo holds it; the new repo starts from a new root commit |
+
+## 12. Requirements added after approval (2026-10-24)
+
+The owner added these standing requirements after this spec was approved. M0.1 records
+them in the charter (plan Task 4A); each is built at the milestone named below. Only
+the CI and PR-template items are M0 work.
+
+| ID (charter) | Requirement | Built in | M0 work |
+|---|---|---|---|
+| P13, G29 | Honest by design, no dark patterns: every opt-in off by default; cancel, decline and "Later" as prominent as confirm; no confirmshaming; no pre-checked boxes; no nagging; plain consent and warning text | M3.4 settings, M9.4 plugin consent, M10.1 update prompts, M11.4 installer | PR template item (M0.3) |
+| G26 | Privacy Policy (`PRIVACY.md`): no telemetry, the one automatic outbound call (update check, can be turned off), data stored locally, plugin network caveat | Draft M3.5, final M13.5; linked from README, About (M3.1) and the installer (M11.2) | None |
+| G27 | Terms of Service (`TERMS.md`): use of the app, no warranty, user responsible for their EMC license, live writes at the user's risk; Apache-2.0 governs the code | Draft M3.5, final M13.5; installer license page (M11.2) | None |
+| G28 | Third-party audit of every NuGet package (transitive included), SDK, font, icon and image: license allow-list and known vulnerabilities | CI from M0.3; release gate M13.6 and every release | CI vulnerable-package and license checks (M0.3) |
+| G30 | Asset licensing: every font, icon and image recorded in `assets/PROVENANCE.md` (source, author, license, hash) and THIRD-PARTY-NOTICES.md, license files shipped | M2.2 fonts and icons, M11.2 wizard art | None |
+| G18 (extended) | Accessible names (alt text) on every meaningful image and control, decorative images hidden from automation; non-text contrast 3:1 (WCAG 2.1 1.4.11); full keyboard navigation with a documented keyboard map | Every UI batch; audit M13.1 | PR template item (M0.3) |
+| G20 (extended) | Language option: Settings > General > Language, defaulting to the Windows display language with English fallback; strings only in .resx so a language needs no code change | M3.4 | None |
+
+Contrast check of the charter palettes (charter 8.3-8.5 tokens, WCAG 2.1 AA, 2026-10-24).
+These pairs fail and are fixed in M2 before any theme ships:
+
+| Theme and mode | Pair | Ratio | Needs |
+|---|---|---|---|
+| Claude Light, Glass Light | `Text.OnAccent` #FFFFFF on `Accent.Primary` #C96442 (primary buttons) | 3.9:1 | 4.5:1 |
+| Claude Light | `Accent.Primary` #C96442 as link text on `Surface.Base` #FAF9F5 | 3.7:1 | 4.5:1 |
+| Claude Light | `Border.Strong` on `Surface.Sunken` (input border) | 1.45:1 | 3:1 |
+| Claude Dark | `Border.Strong` on `Surface.Sunken` | 2.3:1 | 3:1 |
+| EMC Light | `Border.Strong` on `Surface.Sunken` | 2.35:1 | 3:1 |
+| EMC Dark | `Border.Strong` on `Surface.Sunken` | 2.69:1 | 3:1 |
+
+`Accent.Hover` #B65737 already gives 4.76:1 with white text. All body and secondary
+text pairs, row states, focus rings and the dark-mode accents pass.

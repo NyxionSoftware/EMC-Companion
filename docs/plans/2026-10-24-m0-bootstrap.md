@@ -27,7 +27,7 @@ once Task 1 adds it).
 - `Nullable` enable, `ImplicitUsings` disable, `LangVersion` latest, `TreatWarningsAsErrors` in Release, `EnforceCodeStyleInBuild` true, central package management, package lock files.
 - Style (charter 7): block-scoped namespaces, usings outside the namespace with System first and groups separated by a blank line, Allman braces, braces always, explicit access modifiers, `_camelCase` private readonly fields, one public type per file named like the file, no `#region`, `sealed` unless designed for inheritance.
 - Test classes `<Type>Tests`, test methods `Method_State_Expected`, Shouldly assertions.
-- Package versions: Microsoft.Extensions.Hosting 10.0.13, Microsoft.Extensions.DependencyInjection.Abstractions 10.0.13, CommunityToolkit.Mvvm 8.4.2, xunit.v3 4.0.2, Shouldly 4.3.0, NetArchTest.eNhancedEdition 1.4.5, Microsoft.CodeAnalysis.CSharp 5.9.0, Microsoft.NETFramework.ReferenceAssemblies 1.0.3; gitleaks v8.30.1.
+- Package versions: Microsoft.Extensions.Hosting 10.0.13, Microsoft.Extensions.DependencyInjection.Abstractions 10.0.13, CommunityToolkit.Mvvm 8.4.2, xunit.v3 4.0.2, Shouldly 4.3.0, NetArchTest.eNhancedEdition 1.4.5, Microsoft.CodeAnalysis.CSharp 5.9.0, Microsoft.NETFramework.ReferenceAssemblies 1.0.3; gitleaks v8.30.1; nuget-license 4.0.18 (local dotnet tool).
 - Source only: never commit `*.dll`, `*.exe`, `*.pdb`, `*.nupkg`, `*.snupkg`, `*.zip`, `*.msi`, `*.7z`, or anything under `bin/`, `obj/`, `artifacts/`, `publish/`.
 - Clean room: no Oracle files, no decompiled code, no metadata tokens, no workstation hostnames, no `C:\Users\<name>` paths, no real customer names. Placeholders use `example.invalid` and `not-a-password`.
 - Never open a visible app window during automated work; tests never create windows.
@@ -50,12 +50,12 @@ once Task 1 adds it).
 Done by the planning session with the owner approving each `gh` command; listed so the
 record is complete. No code.
 
-- [ ] Push `legacy` at `b166aeb` to the old repo; `gh repo rename EMC-Companion-Legacy`; set its default branch to `legacy`; delete its other branches.
-- [ ] `gh repo create NyxionSoftware/EMC-Companion --public`; push local `main` and `main-dev` (root commit `478fa3b`); set default branch `main-dev`, squash and merge-commit only, delete head branches on merge.
-- [ ] Enable secret scanning, push protection, Dependabot alerts and security updates, private vulnerability reporting.
-- [ ] Rulesets phase 1 for `main` (merge commits only) and `main-dev` (squash only): no deletion, no force push, PR required with 0 approvals.
-- [ ] Repoint old local clones' `origin` to `EMC-Companion-Legacy.git` so no legacy branch can be pushed to the new public repo.
-- [ ] Create the private Trello board "EMC Companion Roadmap" from charter 16 (lists, labels, 65 batch cards, 14 milestone cards).
+- [x] Push `legacy` at `b166aeb` to the old repo; `gh repo rename EMC-Companion-Legacy`; set its default branch to `legacy`; delete its other branches.
+- [x] `gh repo create NyxionSoftware/EMC-Companion --public`; push local `main` and `main-dev` (root commit `478fa3b`); set default branch `main-dev`, squash and merge-commit only, delete head branches on merge.
+- [x] Enable secret scanning, push protection, Dependabot alerts and security updates, private vulnerability reporting.
+- [x] Rulesets phase 1 for `main` (merge commits only) and `main-dev` (squash only): no deletion, no force push, PR required with 0 approvals.
+- [x] Repoint old local clones' `origin` to `EMC-Companion-Legacy.git` so no legacy branch can be pushed to the new public repo.
+- [x] Create the private Trello board "EMC Companion Roadmap" from charter 16 (lists, labels, 65 batch cards, 14 milestone cards).
 
 ---
 
@@ -125,16 +125,34 @@ Branch `feature/m0-1-repo-legal` (exists; holds the spec and this plan). Trello 
 - [ ] **Step 1: `.gitignore`**: Visual Studio essentials (`bin/`, `obj/`, `.vs/`, `*.user`, `*.suo`, `TestResults/`, `*.binlog`) plus charter 2.4 and 19.5 entries (`publish/`, `artifacts/`, `lib/emc/`, `**/EMCClient/`, `appsettings.Local.json`, `settings.json`, `*.pfx`, `logs/`, `screenshots/raw/`, `REA-Notes/`). Do not ignore `*.snk` (none are used).
 - [ ] **Step 2: `.gitattributes`**: `* text=auto eol=crlf`; `*.png *.ico *.jpg *.gif *.ttf *.otf *.woff *.woff2 binary`.
 - [ ] **Step 3: `.editorconfig`**: root; `[*]` utf-8, crlf, final newline, trim trailing whitespace, 4 spaces; `[*.{csproj,props,targets,slnx,json,xaml,yml,yaml,config,manifest}]` 2 spaces; `[*.md]` no trailing-whitespace trim. `[*.cs]` with these at `error`:
-  - `csharp_style_namespace_declarations = block_scoped:error` and `dotnet_diagnostic.IDE0161.severity = error`
+  - `csharp_style_namespace_declarations = block_scoped:error` and `dotnet_diagnostic.IDE0160.severity = error` (IDE0160 is what fires for a file-scoped namespace when block-scoped is preferred; corrected from IDE0161 in execution), plus `dotnet_diagnostic.IDE1006.severity = error` so the naming rules fail builds
   - `csharp_using_directive_placement = outside_namespace:error`, `IDE0065` error
   - `dotnet_sort_system_directives_first = true`, `dotnet_separate_import_directive_groups = true`
   - `csharp_new_line_before_open_brace = all`, `csharp_prefer_braces = true:error`, `IDE0011` error
-  - `IDE0005` (unnecessary usings), `IDE0040` (accessibility modifiers, `dotnet_style_require_accessibility_modifiers = always`), `IDE0044` (readonly) at error
+  - `IDE0005` (unnecessary usings), `IDE0040` (accessibility modifiers, `dotnet_style_require_accessibility_modifiers = for_non_interface_members`), `IDE0044` (readonly) at error
   - `csharp_style_var_when_type_is_apparent = true:suggestion`, `csharp_style_var_elsewhere = false:suggestion`
-  - Naming rules: private fields `_camelCase`; interfaces `I` prefix; async methods `Async` suffix; constants PascalCase; all at error.
+  - Naming rules: private fields `_camelCase`; interfaces `I` prefix; async methods `Async` suffix; constants PascalCase; all at error. A `[tests/**.cs]` section turns the `Async` suffix rule off (charter 7.4 test names).
 - [ ] **Step 4: `.pre-commit-config.yaml`**: repo `https://github.com/gitleaks/gitleaks` at `rev: v8.30.1`, hook `gitleaks`. A comment notes ggshield (GitGuardian) as an optional second hook.
 - [ ] **Step 5: Verify** `git status --short` lists only the four new files and `git check-ignore -v bin/x obj/x publish/x artifacts/x` reports all four as ignored.
 - [ ] **Step 6: Commit**: `Add gitignore, gitattributes, editorconfig and pre-commit config`.
+
+### Task 4A: Charter amendment for the requirements added after approval
+
+**Files:**
+- Modify: `docs/PROJECT.md`
+
+**Interfaces:**
+- Consumes: spec section 12 (requirements table, contrast table) and spec section 2 rows D26-D27.
+- Produces: charter IDs P13 and G26-G30 that later batches and Trello cards cite.
+
+- [ ] **Step 1: Section 4.2** gains row P13 "Honest by design": no dark patterns; every opt-in off by default; cancel, decline and "Later" as prominent as confirm; no confirmshaming copy; no pre-checked boxes; no nagging; destructive actions labeled plainly; turning a feature off is as easy as turning it on.
+- [ ] **Step 2: Section 5.6** gains rows G26 Privacy Policy, G27 Terms of Service, G28 Third-party audit, G29 No dark patterns, G30 Asset licensing, each with acceptance criteria taken from spec section 12; G18 gains accessible names (alt text) on every meaningful image and control with decorative images hidden, non-text contrast 3:1 and a documented keyboard map; G20 gains the language option (Settings > General > Language, Windows display language default, English fallback).
+- [ ] **Step 3: Section 5.1** G1 contrast criterion also requires 3:1 for non-text UI (focus ring, input borders, icons, selected state) in all six combinations. **Section 5.7** "Localized languages other than English" becomes "Shipping languages beyond those decided in D27 (the language option itself ships in v1)".
+- [ ] **Step 4: Sections 8.3, 8.4, 8.5** each get a short "Contrast check (2026-10-24)" note under the token table listing that theme's failing pairs from spec section 12 and "fixed in M2 before the theme ships". **Section 8.12** gains bullets for accessible names on images and the keyboard map.
+- [ ] **Step 5: Section 13** gains rows Privacy Policy (`PRIVACY.md`, G26) and Terms of Service (`TERMS.md`, G27). **Section 15.3** PR template gains the three checklist items from spec section 7.3.
+- [ ] **Step 6: Section 16** batch bullets gain the new work where spec section 12 places it (M0.3, M2.1-M2.4, M2.2 provenance, M3.1, M3.4, M3.5, M9.4, M10.1, M11.2, M11.4, M13.1, M13.5, M13.6). **Section 17** gains D26 and D27 as pending, with the spec's recommendations.
+- [ ] **Step 7: Verify**: heading count and section numbers unchanged (compare heading lines before and after); the scrub checks from Task 1 return no output; every new G/P/D ID appears exactly once as a definition.
+- [ ] **Step 8: Commit**: `Add privacy, terms, audit, accessibility and language requirements to the charter`.
 
 ### Task 5: Ship M0.1
 
@@ -335,19 +353,19 @@ Branch `feature/m0-3-ci` from the updated `main-dev`. Trello card to In Progress
     - `SourceFiles_All_DeclareAtMostOnePublicTopLevelTypeNamedLikeTheFile`: at most one public top-level type; if present, its identifier equals the file name with `.cs` and any `.xaml` suffix removed.
     - `SourceFiles_All_AvoidRegions`: no `RegionDirectiveTriviaSyntax`.
 - [ ] **Step 2: Run** `dotnet test --project tests/EmcCompanion.Architecture.Tests`. Expected: all pass against the M0.2 code (these rules guard code that already conforms; Step 3 proves they fail when broken). If one fails, fix the production code, not the rule.
-- [ ] **Step 3: Prove the rules bite.** Temporarily change `DomainAssemblyMarker.cs` to a file-scoped namespace: `dotnet build -c Release` fails with IDE0161 and `SourceFiles_All_UseBlockScopedNamespaces` fails naming the file. Revert.
+- [ ] **Step 3: Prove the rules bite.** Temporarily change `DomainAssemblyMarker.cs` to a file-scoped namespace: `dotnet build -c Release` fails with IDE0160 and `SourceFiles_All_UseBlockScopedNamespaces` fails naming the file. Revert.
 - [ ] **Step 4: Commit**: `Add architecture tests for references, layers and source style`.
 
 ### Task 13: CI workflow
 
 **Files:**
-- Create: `.github/workflows/ci.yml`
+- Create: `.github/workflows/ci.yml`, `.config/dotnet-tools.json` (local tool `nuget-license` 4.0.18), `build/allowed-licenses.json`
 
 **Interfaces:**
 - Produces: check names `build` and `main-source` (the required checks in Task 14).
 
 - [ ] **Step 1: Resolve action SHAs** for the latest releases of `actions/checkout` and `actions/setup-dotnet` (read-only `gh api repos/actions/<name>/releases/latest` and `.../git/ref/tags/<tag>`); pin `uses:` to the SHA with the tag in a comment.
-- [ ] **Step 2: Write `ci.yml`** per spec 7.1: name `CI`; triggers; `permissions: contents: read`; concurrency `ci-${{ github.ref }}` cancel in progress. Job `build` (`windows-latest`): checkout `fetch-depth: 0`; setup-dotnet `global-json-file: global.json`; `dotnet restore --locked-mode`; `dotnet format --verify-no-changes --no-restore`; `dotnet build -c Release --no-restore`; `dotnet test -c Release --no-build`; Bridge bitness step runs `src\EmcCompanion.Bridge\bin\Release\net48\EmcCompanion.Bridge.exe` and fails unless the output contains `Process 64-bit`; gitleaks step downloads `gitleaks_8.30.1_windows_x64.zip` and `gitleaks_8.30.1_checksums.txt` from the v8.30.1 release, fails on SHA-256 mismatch, runs `gitleaks git --redact --exit-code 1 .`. Job `main-source` (`ubuntu-latest`, `if: github.event_name == 'pull_request' && github.base_ref == 'main'`): fails unless `github.head_ref` is `main-dev` or starts with `release/`.
+- [ ] **Step 2: Write `ci.yml`** per spec 7.1: name `CI`; triggers; `permissions: contents: read`; concurrency `ci-${{ github.ref }}` cancel in progress. Job `build` (`windows-latest`): checkout `fetch-depth: 0`; setup-dotnet `global-json-file: global.json`; `dotnet restore --locked-mode`; `dotnet format --verify-no-changes --no-restore`; `dotnet build -c Release --no-restore`; `dotnet test -c Release --no-build`; Bridge bitness step runs `src\EmcCompanion.Bridge\bin\Release\net48\EmcCompanion.Bridge.exe` and fails unless the output contains `Process 64-bit`; vulnerability step runs `dotnet list package --vulnerable --include-transitive` and fails if the output reports any vulnerable package; license step runs `dotnet tool restore` then `dotnet nuget-license` over `EmcCompanion.slnx` with `--allowed-license-types build/allowed-licenses.json` (MIT, Apache-2.0, BSD-2-Clause, BSD-3-Clause, ISC, OFL-1.1) and fails on anything else (G28); gitleaks step downloads `gitleaks_8.30.1_windows_x64.zip` and `gitleaks_8.30.1_checksums.txt` from the v8.30.1 release, fails on SHA-256 mismatch, runs `gitleaks git --redact --exit-code 1 .`. Job `main-source` (`ubuntu-latest`, `if: github.event_name == 'pull_request' && github.base_ref == 'main'`): fails unless `github.head_ref` is `main-dev` or starts with `release/`.
 - [ ] **Step 3: Commit**: `Add the CI workflow`.
 - [ ] **Step 4: Verify** by pushing the branch and opening a draft PR (owner approves the `gh pr create --draft`): `build` is green; `main-source` does not run.
 
@@ -356,7 +374,7 @@ Branch `feature/m0-3-ci` from the updated `main-dev`. Trello card to In Progress
 **Files:**
 - Create: `.github/pull_request_template.md`, `.github/ISSUE_TEMPLATE/bug_report.yml`, `.github/ISSUE_TEMPLATE/feature_request.yml`, `.github/ISSUE_TEMPLATE/config.yml`, `.github/dependabot.yml`
 
-- [ ] **Step 1: PR template** = charter 15.3 with a `Trello card:` line under Batch.
+- [ ] **Step 1: PR template** = charter 15.3 with a `Trello card:` line under Batch, plus checklist items `UI changes: accessible names, keyboard reachable, contrast meets AA`, `No dark patterns (charter P13)`, and `Every new package, font, icon or image is recorded with its license`.
 - [ ] **Step 2: Issue forms**: bug (steps, expected, actual, version/commit, theme and mode, confirmation checkbox "No real enterprise data, credentials or hostnames"); feature (problem, proposal, EMC parity reference); `config.yml` disables blank issues and links security reports to private vulnerability reporting.
 - [ ] **Step 3: `dependabot.yml`**: ecosystems `nuget` (directory `/`) and `github-actions` (directory `/`), weekly, one group each for minor and patch updates, target branch `main-dev`.
 - [ ] **Step 4: Commit**: `Add PR and issue templates and Dependabot config`.
